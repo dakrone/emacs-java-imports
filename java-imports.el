@@ -51,9 +51,12 @@
   :group 'java-imports
   :type 'boolean)
 
-;; TODO: add option for disabling cache
+(defcustom java-imports-use-cache t
+  "Whether packages for classes should be cached"
+  :group 'java-imports
+  :type 'boolean)
 
-(defun goto-java-imports-start ()
+(defun java-imports-go-to-imports-start ()
   "Go to where java import statements should start"
   (goto-char (point-min))
   (or (re-search-forward "package .*;" nil t)
@@ -70,20 +73,29 @@ for this already, but I don't know it."
            (line-end (progn (end-of-line) (point))))
       (buffer-substring line-start line-end))))
 
-(defun import-for-line ()
+(defun java-import-for-line ()
   "Returns the fully-qualified class name for the import line."
   (cadr
    (s-match "import \\\(.*\\\);" (current-line-text))))
 
 ;;;###autoload
 (defun import-java-class (class-name)
-  "Import the Java class for the symbol at point."
+  "Import the Java class for the symbol at point. Uses the symbol
+at the point for the class name.
+
+Checks the import cache to see if a package entry exists for the
+given class. If found, adds an import statement for the class. If
+not found, prompts for the package and saves it to the cache.
+
+If called with a prefix argument, overwrites the package for an
+already-existing class name."
   (interactive (list (read-string "Class name: " (thing-at-point 'symbol))))
   (save-excursion
     (let* ((key (intern class-name))
            (cache (pcache-repository "java-imports"))
            ;; Check if we have seen this class's package before
-           (cached-package (pcache-get cache key))
+           (cached-package (and java-imports-use-cache
+                                (pcache-get cache key)))
            ;; If called with a prefix, overwrite the cached value always
            (add-to-cache? (or current-prefix-arg
                               (eq nil cached-package)))
@@ -93,20 +105,20 @@ for this already, but I don't know it."
                         (read-string "Package: ")))
            (full-name (or (car (s-match ".*\\\..*" class-name))
                           (concat package "." class-name))))
-      (goto-java-imports-start)
+      (java-imports-go-to-imports-start)
       ;; If it is a Java import, it goes one empty line below project-specific
       ;; imports
       (when (s-starts-with? "java." full-name)
         (re-search-forward "^$" nil t)
         (forward-line 1))
-      (while (and (import-for-line)
-                  (string< (import-for-line) full-name))
+      (while (and (java-import-for-line)
+                  (string< (java-import-for-line) full-name))
         (forward-line 1))
       (open-line 1)
       (insert-string "import " full-name ";")
       ;; Now we may need to add empty lines
       (forward-line 1)
-      (when (not (import-for-line))
+      (when (not (java-import-for-line))
         (if (s-match "^$" (current-line-text))
             nil
           (open-line 1)))
