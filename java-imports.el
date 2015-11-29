@@ -6,17 +6,17 @@
 ;; URL: http://www.github.com/dakrone/emacs-java-imports
 ;; Version: 0.1.0
 ;; Keywords: java
-;; Package-Requires: ((s "1.10.0") (pcache "v0.3.2"))
+;; Package-Requires: ((s "1.10.0") (pcache "0.3.2"))
 
 ;; This file is not part of GNU Emacs.
 
 ;;; Commentary:
 
-;; Provides TODO: fill me in
+;; Provides a way to easily add `import' statements for Java classes
 
 ;;; Usage:
 
-;; TODO: write me
+;; (define-key java-mode-map (kbd "M-I") 'import-java-class)
 
 ;;; License:
 
