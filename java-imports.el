@@ -115,7 +115,7 @@ already-existing class name."
                   (string< (java-import-for-line) full-name))
         (forward-line 1))
       (open-line 1)
-      (insert-string "import " full-name ";")
+      (insert "import " full-name ";")
       ;; Now we may need to add empty lines
       (forward-line 1)
       (when (not (java-import-for-line))
