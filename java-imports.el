@@ -54,14 +54,18 @@
   "TODO: implement me"
   (make-hash-table))
 
-(defun import-for-line ()
-  "Returns the fully-qualified class name for the import line."
+(defun current-line-text ()
+  "The current line's text. There's probably an elisp function
+for this already, but I don't know it."
   (save-excursion
     (let* ((line-start (progn (beginning-of-line-text) (point)))
            (line-end (progn (end-of-line) (point))))
-      (cadr
-       (s-match "import \\\(.*\\\);"
-                (buffer-substring line-start line-end))))))
+      (buffer-substring line-start line-end))))
+
+(defun import-for-line ()
+  "Returns the fully-qualified class name for the import line."
+  (cadr
+   (s-match "import \\\(.*\\\);" (current-line-text))))
 
 ;;;###autoload
 (defun import-java-class (class-name)
@@ -85,6 +89,12 @@
         (forward-line 1))
       (open-line 1)
       (insert-string "import " full-name ";")
+      ;; Now we may need to add empty lines
+      (forward-line 1)
+      (when (not (import-for-line))
+        (if (s-match "^$" (current-line-text))
+            nil
+          (open-line 1)))
       full-name)))
 
 ;;; java-imports.el ends here
