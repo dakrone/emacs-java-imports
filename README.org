@@ -18,12 +18,39 @@
 
 I needed a way to import java classes easily in Emacs.
 
-TODO: Fill me in
+This adds the =import-java-class= function, which will prompt for the class at
+point, then the package, then add the required import statement for the class
+and cache a "class-name -> package" relationship for any future importing of the
+class.
+
+It does this because I didn't want to drop into Intellij to add all the import
+statements for my Java code, I just want to hit a key and have an import
+statement added for the class under the point.
+
+* Installation
+
+=java-imports= is available in the MELPA repository. Do this, if MELPA isn't
+already in your sources:
+
+#+BEGIN_SRC emacs-lisp
+(require 'package)
+(add-to-list 'package-archives
+             '("MELPA" . "https://melpa.org/packages/" ))
+#+END_SRC
+
+Then run =M-x package-refresh-contents= to load the contents of the new
+repository, and =M-x package-install RET java-imports RET= to install
+=java-imports=.
 
 * Usage
 
-TODO: Fill me in
-
 #+BEGIN_SRC emacs-lisp
-(use-package java-imports)
+(require 'java-imports)
+(define-key java-mode-map (kbd "M-I") 'import-java-class)
 #+END_SRC
+
+* Things to do:
+
+- [ ] Avoid importing packages that already have import statements
+- [ ] Inner classes?
+- [ ] Add tests
