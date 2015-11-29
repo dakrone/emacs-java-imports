@@ -6,7 +6,7 @@
 ;; URL: http://www.github.com/dakrone/emacs-java-imports
 ;; Version: 0.1.0
 ;; Keywords: java
-;; Package-Requires: ((s "1.10.0"))
+;; Package-Requires: ((s "1.10.0") (pcache "v0.3.2"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -40,6 +40,18 @@
 (require 'thingatpt)
 (require 'cl-lib)
 (require 's)
+(require 'pcache)
+
+(defgroup java-imports nil
+  "Customization for java imports package"
+  :group 'languages)
+
+(defcustom java-imports-save-buffer-after-import-added t
+  "`t' to save the current buffer after inserting an import statement."
+  :group 'java-imports
+  :type 'boolean)
+
+;; TODO: add option for disabling cache
 
 (defun goto-java-imports-start ()
   "Go to where java import statements should start"
@@ -49,10 +61,6 @@
         (goto-char (point-min))
         (re-search-forward "import .*;" nil t)))
   (forward-line 2))
-
-(defun load-java-class-packages ()
-  "TODO: implement me"
-  (make-hash-table))
 
 (defun current-line-text ()
   "The current line's text. There's probably an elisp function
@@ -72,9 +80,16 @@ for this already, but I don't know it."
   "Import the Java class for the symbol at point."
   (interactive (list (read-string "Class name: " (thing-at-point 'symbol))))
   (save-excursion
-    (let* ((known-packages (load-java-class-packages))
+    (let* ((key (intern class-name))
+           (cache (pcache-repository "java-imports"))
+           ;; Check if we have seen this class's package before
+           (cached-package (pcache-get cache key))
+           ;; If called with a prefix, overwrite the cached value always
+           (add-to-cache? (or current-prefix-arg
+                              (eq nil cached-package)))
            (package (or (car (s-match ".*\\\..*" class-name))
-                        (gethash class-name known-packages)
+                        (and (not current-prefix-arg)
+                             cached-package)
                         (read-string "Package: ")))
            (full-name (or (car (s-match ".*\\\..*" class-name))
                           (concat package "." class-name))))
@@ -95,6 +110,13 @@ for this already, but I don't know it."
         (if (s-match "^$" (current-line-text))
             nil
           (open-line 1)))
+      (when java-imports-save-buffer-after-import-added
+        (save-buffer))
+      (when add-to-cache?
+        (message "Adding '%s' -> '%s' to java imports cache"
+                 class-name package)
+        (pcache-put cache key package)
+        (pcache-save cache))
       full-name)))
 
 ;;; java-imports.el ends here
