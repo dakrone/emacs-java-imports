@@ -65,7 +65,7 @@
         (re-search-forward "import .*;" nil t)))
   (forward-line 2))
 
-(defun current-line-text ()
+(defun java-imports-current-line-text ()
   "The current line's text. There's probably an elisp function
 for this already, but I don't know it."
   (save-excursion
@@ -73,10 +73,10 @@ for this already, but I don't know it."
            (line-end (progn (end-of-line) (point))))
       (buffer-substring line-start line-end))))
 
-(defun java-import-for-line ()
+(defun java-imports-import-for-line ()
   "Returns the fully-qualified class name for the import line."
   (cadr
-   (s-match "import \\\(.*\\\);" (current-line-text))))
+   (s-match "import \\\(.*\\\);" (java-imports-current-line-text))))
 
 ;;;###autoload
 (defun import-java-class (class-name)
@@ -111,14 +111,14 @@ already-existing class name."
       (when (s-starts-with? "java." full-name)
         (re-search-forward "^$" nil t)
         (forward-line 1))
-      (while (and (java-import-for-line)
-                  (string< (java-import-for-line) full-name))
+      (while (and (java-imports-import-for-line)
+                  (string< (java-imports-import-for-line) full-name))
         (forward-line 1))
       (open-line 1)
       (insert "import " full-name ";")
       ;; Now we may need to add empty lines
       (forward-line 1)
-      (when (not (java-import-for-line))
+      (when (not (java-imports-imports-for-line))
         (if (s-match "^$" (current-line-text))
             nil
           (open-line 1)))
