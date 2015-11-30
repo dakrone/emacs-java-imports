@@ -16,7 +16,7 @@
 
 ;;; Usage:
 
-;; (define-key java-mode-map (kbd "M-I") 'import-java-class)
+;; (define-key java-mode-map (kbd "M-I") 'java-imports-add-import)
 
 ;;; License:
 
@@ -78,7 +78,7 @@ for this already, but I don't know it."
    (s-match "import \\\(.*\\\);" (java-imports-current-line-text))))
 
 ;;;###autoload
-(defun import-java-class (class-name)
+(defun java-imports-add-import (class-name)
   "Import the Java class for the symbol at point. Uses the symbol
 at the point for the class name.
 
@@ -130,6 +130,6 @@ already-existing class name."
         (pcache-save cache))
       full-name)))
 
-(provide 'import-java-class)
+(provide 'java-imports-add-import)
 
 ;;; java-imports.el ends here

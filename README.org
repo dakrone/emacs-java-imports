@@ -12,7 +12,7 @@
 #+TODO: TODO(t) SOMEDAY(s) INPROGRESS(i) HOLD(h) WAITING(w@/!) NEEDSREVIEW(n@/!) | DONE(d)
 #+TODO: TODO(t) INPROGRESS(i) | CANCELLED(c@/!)
 #+TAGS: export(e) noexport(n)
-#+STARTUP: fold nodlcheck lognotestate content
+#+STARTUP: fold nodlcheck lognotestate showall
 
 * Introduction
 
@@ -47,7 +47,7 @@ repository, and =M-x package-install RET java-imports RET= to install
 
 #+BEGIN_SRC emacs-lisp
 (require 'java-imports)
-(define-key java-mode-map (kbd "M-I") 'import-java-class)
+(define-key java-mode-map (kbd "M-I") 'java-imports-add-import)
 #+END_SRC
 
 * Things to do:
