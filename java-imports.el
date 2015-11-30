@@ -113,22 +113,25 @@ already-existing class name."
       (while (and (java-imports-import-for-line)
                   (string< (java-imports-import-for-line) full-name))
         (forward-line 1))
-      (open-line 1)
-      (insert "import " full-name ";")
-      ;; Now we may need to add empty lines
-      (forward-line 1)
-      (when (not (java-imports-imports-for-line))
-        (if (s-match "^$" (current-line-text))
-            nil
-          (open-line 1)))
-      (when java-imports-save-buffer-after-import-added
-        (save-buffer))
-      (when add-to-cache?
-        (message "Adding '%s' -> '%s' to java imports cache"
-                 class-name package)
-        (pcache-put cache key package)
-        (pcache-save cache))
-      full-name)))
+      (if (equal (java-imports-import-for-line) full-name)
+          (message "Import already exists")
+        (progn
+          (open-line 1)
+          (insert "import " full-name ";")
+          ;; Now we may need to add empty lines
+          (forward-line 1)
+          (when (not (java-imports-import-for-line))
+            (if (s-match "^$" (java-imports-current-line-text))
+                nil
+              (open-line 1)))
+          (when java-imports-save-buffer-after-import-added
+            (save-buffer))
+          (when add-to-cache?
+            (message "Adding '%s' -> '%s' to java imports cache"
+                     class-name package)
+            (pcache-put cache key package)
+            (pcache-save cache))
+          full-name)))))
 
 (provide 'java-imports-add-import)
 

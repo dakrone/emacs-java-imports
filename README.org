@@ -52,6 +52,6 @@ repository, and =M-x package-install RET java-imports RET= to install
 
 * Things to do:
 
-- [ ] Avoid importing packages that already have import statements
+- [X] Avoid importing packages that already have import statements
 - [ ] Inner classes?
 - [ ] Add tests
