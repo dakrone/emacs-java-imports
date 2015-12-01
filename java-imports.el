@@ -16,6 +16,7 @@
 
 ;;; Usage:
 
+;; (require 'java-imports)
 ;; (define-key java-mode-map (kbd "M-I") 'java-imports-add-import)
 
 ;;; License:

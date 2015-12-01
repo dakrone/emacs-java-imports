@@ -29,7 +29,7 @@ statement added for the class under the point.
 
 * Installation
 
-=java-imports= is ([[https://github.com/milkypostman/melpa/pull/3333][not yet]]) available in the MELPA repository. Once it is:
+=java-imports= is available in the MELPA repository.
 
 Do this, if MELPA isn't already in your sources:
 
@@ -49,6 +49,8 @@ repository, and =M-x package-install RET java-imports RET= to install
 (require 'java-imports)
 (define-key java-mode-map (kbd "M-I") 'java-imports-add-import)
 #+END_SRC
+
+(or whatever you want to bind it to)
 
 * Things to do:
 
