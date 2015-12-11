@@ -56,27 +56,78 @@
   :group 'java-imports
   :type 'boolean)
 
+(defcustom java-imports-find-block-function 'java-imports-find-place-after-last-import
+  "A function that should find a proper insertion place within
+  the block of import declarations."
+  :group 'java-imports
+  :type 'function)
+
 (defun java-imports-go-to-imports-start ()
-  "Go to where java import statements should start"
+  "Go to the point where java import statements start or should
+start (if there are none)."
   (goto-char (point-min))
-  (or (re-search-forward "package .*;" nil t)
-      (progn
-        (goto-char (point-min))
-        (re-search-forward "import .*;" nil t)))
-  (forward-line 2))
+  ;; package declaration is always in the beginning of a file, so no need to
+  ;; reset the point after the first search
+  (let ((package-decl-point (re-search-forward "package .*;" nil t))
+        (import-decl-point (re-search-forward "import .*;" nil t)))
+    ;; 1. If there are imports in the file - go to the first one
+    ;;
+    ;; 2. No imports, and the package declaration is available - go to the end
+    ;; of the declaration
+    ;;
+    ;; 3. Neither package nor import declarations are present - just go to the
+    ;; first line
+    (cond (import-decl-point (goto-char import-decl-point)
+                             (beginning-of-line))
+          (package-decl-point (goto-char package-decl-point)
+                              (forward-line)
+                              (unless (equal (point-at-bol) (point-at-eol))
+                                (open-line 3)
+                                (forward-line)))
+          (t (goto-char (point-min))
+             (unless (equal (point-at-bol) (point-at-eol))
+               (open-line 2))))))
 
 (defun java-imports-current-line-text ()
   "The current line's text. There's probably an elisp function
 for this already, but I don't know it."
-  (save-excursion
-    (let* ((line-start (progn (beginning-of-line-text) (point)))
-           (line-end (progn (end-of-line) (point))))
-      (buffer-substring line-start line-end))))
+  (string-trim (thing-at-point 'line)))
 
 (defun java-imports-import-for-line ()
   "Returns the fully-qualified class name for the import line."
   (cadr
    (s-match "import \\\(.*\\\);" (java-imports-current-line-text))))
+
+(defun java-imports-import-exists-p (full-name)
+  "Checks if the import already exists"
+  (save-excursion
+    (goto-char (point-min))
+    (re-search-forward (concat "^[ \t]*import[ \t]+" full-name "[ \t]*;") nil t)))
+
+(defun java-imports-find-place-sorted-block (full-name class-name package)
+  "Finds the insertion place within a sorted import block.
+
+Follows a convention where non-JRE imports are separated from JRE
+imports by a single line, and both blocks are always present."
+
+  ;; Skip builtin imports if not a JRE import
+  (when (s-starts-with? "java." full-name)
+    (re-search-forward "^$" nil t)
+    (forward-line 1))
+
+  ;; Search for a proper place within a block
+  (while (and (java-imports-import-for-line)
+              (string< (java-imports-import-for-line) full-name))
+    (forward-line 1))
+  (open-line 1))
+
+(defun java-imports-find-place-after-last-import (full-name class-name package)
+  "Finds the insertion place by moving past the last import declaration in the file."
+  (while (re-search-forward "import[ \t]+.+[ \t]*;" nil t))
+  (beginning-of-line)
+  (unless (equal (point-at-bol) (point-at-eol))
+    (forward-line)
+    (open-line 1)))
 
 ;;;###autoload
 (defun java-imports-add-import (class-name)
@@ -105,34 +156,28 @@ already-existing class name."
                         (read-string "Package: ")))
            (full-name (or (car (s-match ".*\\\..*" class-name))
                           (concat package "." class-name))))
+      (when (java-imports-import-exists-p full-name)
+        (user-error "Import already exists"))
+
+      ;; Goto the start of the imports block
       (java-imports-go-to-imports-start)
-      ;; If it is a Java import, it goes one empty line below project-specific
-      ;; imports
-      (when (s-starts-with? "java." full-name)
-        (re-search-forward "^$" nil t)
-        (forward-line 1))
-      (while (and (java-imports-import-for-line)
-                  (string< (java-imports-import-for-line) full-name))
-        (forward-line 1))
-      (if (equal (java-imports-import-for-line) full-name)
-          (message "Import already exists")
-        (progn
-          (open-line 1)
-          (insert "import " full-name ";")
-          ;; Now we may need to add empty lines
-          (forward-line 1)
-          (when (not (java-imports-import-for-line))
-            (if (s-match "^$" (java-imports-current-line-text))
-                nil
-              (open-line 1)))
-          (when java-imports-save-buffer-after-import-added
-            (save-buffer))
-          (when add-to-cache?
-            (message "Adding '%s' -> '%s' to java imports cache"
-                     class-name package)
-            (pcache-put cache key package)
-            (pcache-save cache))
-          full-name)))))
+
+      ;; Search for a proper insertion place within the block of imports
+      (funcall java-imports-find-block-function full-name class-name package)
+
+      ;; The insertion itself. Note that the only thing left to do here is to
+      ;; insert the import.
+      (insert "import " full-name ";")
+
+      ;; Optionally save the buffer and cache the full package name
+      (when java-imports-save-buffer-after-import-added
+        (save-buffer))
+      (when add-to-cache?
+        (message "Adding '%s' -> '%s' to java imports cache"
+                 class-name package)
+        (pcache-put cache key package)
+        (pcache-save cache))
+      full-name)))
 
 (provide 'java-imports)
 
