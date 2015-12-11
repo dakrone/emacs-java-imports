@@ -8,10 +8,6 @@
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+OPTIONS: H:4 num:nil toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t
 #+OPTIONS: skip:nil d:(HIDE) tags:not-in-toc
-#+TODO: TODO(t) | DONE(d)
-#+TODO: TODO(t) SOMEDAY(s) INPROGRESS(i) HOLD(h) WAITING(w@/!) NEEDSREVIEW(n@/!) | DONE(d)
-#+TODO: TODO(t) INPROGRESS(i) | CANCELLED(c@/!)
-#+TAGS: export(e) noexport(n)
 #+STARTUP: fold nodlcheck lognotestate showall
 
 * Introduction
@@ -47,13 +43,61 @@ repository, and =M-x package-install RET java-imports RET= to install
 
 #+BEGIN_SRC emacs-lisp
 (require 'java-imports)
+
+;; whatever you want to bind it to
 (define-key java-mode-map (kbd "M-I") 'java-imports-add-import)
+
+;; See customization below
+(setq java-imports-find-block-function 'java-imports-find-place-sorted-block)
 #+END_SRC
 
-(or whatever you want to bind it to)
+** Customization
+
+You can customize =java-imports-find-block-function=, either setting it to a
+custom function, or one of the included ones:
+
+- =java-imports-find-place-after-last-import= (default)
+
+  Simply appends the import to the end of the list of imports
+
+- =java-imports-find-place-sorted-block=
+
+  Places the import alphabetically sorted into the list of imports, so they will
+  go into:
+
+#+BEGIN_SRC fundamental
+<package declaration>
+
+<alphabetical non-JDK imports>
+
+<alphabetical JDK imports>
+
+public class Whatever {
+  ...
+}
+#+END_SRC
+
+For example:
+
+#+BEGIN_SRC java
+package org.writequit;
+
+import org.writequit.Strings;
+
+import java.util.ArrayList;
+import java.util.List;
+
+class Foo {
+    public void main() {
+        String[] s = Strings.EMPTY_ARRAY;
+        List<String> = new ArrayList<>();
+    }
+}
+#+END_SRC
 
 * Things to do:
 
 - [X] Avoid importing packages that already have import statements
+- [ ] Handle =*= imports
 - [ ] Inner classes?
 - [ ] Add tests
