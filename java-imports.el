@@ -134,6 +134,6 @@ already-existing class name."
             (pcache-save cache))
           full-name)))))
 
-(provide 'java-imports-add-import)
+(provide 'java-imports)
 
 ;;; java-imports.el ends here
