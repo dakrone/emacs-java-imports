@@ -118,4 +118,5 @@ class Foo {
 - [X] Avoid importing packages that already have import statements
 - [ ] Handle =*= imports
 - [ ] Inner classes?
-- [ ] Add tests
+- [X] Add tests
+- [X] Hook up to travis-ci
