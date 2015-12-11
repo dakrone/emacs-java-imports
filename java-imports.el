@@ -39,6 +39,7 @@
 ;;; Code:
 
 (require 'thingatpt)
+(require 'subr-x)
 (require 's)
 (require 'pcache)
 

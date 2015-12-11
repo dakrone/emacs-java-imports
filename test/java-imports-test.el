@@ -1,11 +1,11 @@
-;;; java-imports-tests.el --- tests for java imports
+;;; java-imports-test.el --- tests for java imports
 
 ;; Copyright (C) 2015  Matthew Lee Hinman
 
 ;;; Code:
 
 (require 'ert)
-(require 'java-imports)
+(load-file "java-imports.el")
 
 (ert-deftest t-import-for-line ()
   (with-temp-buffer
@@ -18,4 +18,4 @@
                    "org.writequit.Thingy"))))
 
 ;; End:
-;;; magit-tests.el ends here
+;;; java-imports-test.el ends here
