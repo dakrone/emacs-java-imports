@@ -12,6 +12,9 @@
 
 * Introduction
 
+[[https://travis-ci.org/dakrone/emacs-java-imports][file:https://travis-ci.org/dakrone/emacs-java-imports.svg]]
+[[http://melpa.org/#/emacs-java-imports][file:http://melpa.org/packages/emacs-java-imports-badge.svg]]
+
 I needed a way to import java classes easily in Emacs.
 
 This adds the =import-java-class= function, which will prompt for the class at

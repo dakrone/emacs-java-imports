@@ -7,6 +7,7 @@
 (depends-on "pcache")
 
 (development
+ (depends-on "cask-package-toolset")
  (depends-on "f")
  (depends-on "ecukes")
  (depends-on "ert-runner")

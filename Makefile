@@ -1,2 +1,15 @@
-test: java-imports.el test/java-imports-test.el
-	cask exec ert-runner
+CASK ?= cask
+EMACS ?= emacs
+
+all: test
+
+test: unit ecukes
+
+unit:
+	${CASK} exec ert-runner
+
+ecukes:
+	${CASK} exec ecukes
+
+install:
+	${CASK} install
