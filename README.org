@@ -53,6 +53,21 @@ repository, and =M-x package-install RET java-imports RET= to install
 
 ** Customization
 
+*** Saving buffer automatically after adding an import
+
+=java-imports= will default to saving the buffer after adding an import, but you
+can customize =java-imports-save-buffer-after-import-added= to change this.
+
+*** Caching
+
+By default packages are cached the first time they're manually entered, if you
+want to overwrite what's in the cache you can invoke =java-imports-add-import=
+with the prefix key (=C-u=).
+
+To disable caching, set =java-imports-use-cache= to =nil=.
+
+*** Import style
+
 You can customize =java-imports-find-block-function=, either setting it to a
 custom function, or one of the included ones:
 
