@@ -88,15 +88,11 @@ start (if there are none)."
              (unless (equal (point-at-bol) (point-at-eol))
                (open-line 2))))))
 
-(defun java-imports-current-line-text ()
-  "The current line's text. There's probably an elisp function
-for this already, but I don't know it."
-  (string-trim (thing-at-point 'line)))
-
 (defun java-imports-import-for-line ()
   "Returns the fully-qualified class name for the import line."
   (cadr
-   (s-match "import \\\(.*\\\);" (java-imports-current-line-text))))
+   (s-match "import \\\(.*\\\);"
+            (string-trim (thing-at-point 'line)))))
 
 (defun java-imports-import-exists-p (full-name)
   "Checks if the import already exists"
