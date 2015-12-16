@@ -82,18 +82,17 @@ start (if there are none)."
                              (beginning-of-line))
           (package-decl-point (goto-char package-decl-point)
                               (forward-line)
-                              (unless (equal (point-at-bol) (point-at-eol))
-                                (open-line 3)
-                                (forward-line)))
+                              (open-line 2)
+                              (forward-line))
           (t (goto-char (point-min))
-             (unless (equal (point-at-bol) (point-at-eol))
-               (open-line 2))))))
+             (open-line 1)))))
 
 (defun java-imports-import-for-line ()
   "Returns the fully-qualified class name for the import line."
-  (cadr
-   (s-match "import \\\(.*\\\);"
-            (string-trim (thing-at-point 'line)))))
+  (let ((tap (thing-at-point 'line)))
+    (when tap
+      (cadr (s-match "import \\\(.*\\\);"
+                     (string-trim tap))))))
 
 (defun java-imports-import-exists-p (full-name)
   "Checks if the import already exists"
