@@ -63,6 +63,25 @@
   :group 'java-imports
   :type 'function)
 
+(defcustom java-imports-default-packages
+  '(("List" . "java.util")
+    ("Collection" . "java.util")
+    ("Set" . "java.util")
+    ("Queue" . "java.util")
+    ("Deque" . "java.util")
+    ("HashSet" . "java.util")
+    ("TreeSet" . "java.util")
+    ("ArrayList" . "java.util")
+    ("LinkedList" . "java.util")
+    ("ArrayDeque" . "java.util")
+    ("PriorityQueue" . "java.util")
+    ("HashMap" . "java.util")
+    ("TreeMap" . "java.util"))
+  "An alist mapping class names to probable packages of the
+classes."
+  :group 'java-imports
+  :type '(alist :key-type string :value-type string))
+
 (defun java-imports-go-to-imports-start ()
   "Go to the point where java import statements start or should
 start (if there are none)."
@@ -125,6 +144,18 @@ imports by a single line, and both blocks are always present."
     (forward-line)
     (open-line 1)))
 
+(defun java-imports-read-package (class-name cached-package)
+  "Reads a package name for a class, offers default values for
+known classes"
+  (or (car (s-match ".*\\\..*" class-name))
+      (and (not current-prefix-arg)
+           cached-package)
+      (let* ((default-package (cdr (assoc-string class-name java-imports-default-packages)))
+             (default-prompt (if default-package
+                                 (concat "[" default-package "]") ""))
+             (prompt (concat "Package " default-prompt ": ")))
+        (read-string prompt nil nil default-package))))
+
 ;;;###autoload
 (defun java-imports-add-import (class-name)
   "Import the Java class for the symbol at point. Uses the symbol
@@ -146,10 +177,7 @@ already-existing class name."
            ;; If called with a prefix, overwrite the cached value always
            (add-to-cache? (or current-prefix-arg
                               (eq nil cached-package)))
-           (package (or (car (s-match ".*\\\..*" class-name))
-                        (and (not current-prefix-arg)
-                             cached-package)
-                        (read-string "Package: ")))
+           (package (java-imports-read-package class-name cached-package))
            (full-name (or (car (s-match ".*\\\..*" class-name))
                           (concat package "." class-name))))
       (when (java-imports-import-exists-p full-name)
