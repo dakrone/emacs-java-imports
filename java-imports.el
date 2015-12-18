@@ -6,7 +6,7 @@
 ;; URL: http://www.github.com/dakrone/emacs-java-imports
 ;; Version: 0.1.0
 ;; Keywords: java
-;; Package-Requires: ((s "1.10.0") (pcache "0.3.2"))
+;; Package-Requires: ((emacs "24.4") (s "1.10.0") (pcache "0.3.2"))
 
 ;; This file is not part of GNU Emacs.
 
