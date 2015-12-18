@@ -63,5 +63,34 @@
     (should (equal (line-number-at-pos) 1))
     (should (equal (count-lines (point-min) (point-max)) 5))))
 
+(ert-deftest t-add-imports ()
+  (with-temp-buffer
+    (setq-local java-imports-find-block-function
+                #'java-imports-find-place-after-last-import)
+    (insert "package mypackage;\n\n")
+    (insert "import java.util.List;\n\n\n")
+    (java-imports-add-import-with-package "ArrayList" "java.util")
+    (should
+     (equal
+      (buffer-string)
+      (concat
+       "package mypackage;\n\n"
+       "import java.util.List;\n"
+       "import java.util.ArrayList;\n\n\n"))))
+
+  (with-temp-buffer
+    (setq-local java-imports-find-block-function
+                #'java-imports-find-place-sorted-block)
+    (insert "package mypackage;\n\n")
+    (insert "import java.util.List;\n\n\n")
+    (java-imports-add-import-with-package "ArrayList" "java.util")
+    (should
+     (equal
+      (buffer-string)
+      (concat
+       "package mypackage;\n\n"
+       "import java.util.ArrayList;\n"
+       "import java.util.List;\n\n\n")))))
+
 ;; End:
 ;;; java-imports-test.el ends here

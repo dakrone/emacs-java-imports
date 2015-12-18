@@ -126,9 +126,10 @@ Follows a convention where non-JRE imports are separated from JRE
 imports by a single line, and both blocks are always present."
 
   ;; Skip builtin imports if not a JRE import
-  (when (s-starts-with? "java." full-name)
-    (re-search-forward "^$" nil t)
-    (forward-line 1))
+  (and (not (s-starts-with? "java." (java-imports-import-for-line)))
+       (when (s-starts-with? "java." full-name)
+         (re-search-forward "^$" nil t)
+         (forward-line 1)))
 
   ;; Search for a proper place within a block
   (while (and (java-imports-import-for-line)
@@ -157,6 +158,28 @@ known classes"
         (read-string prompt nil nil default-package))))
 
 ;;;###autoload
+(defun java-imports-add-import-with-package (class-name package)
+  "Add an import for the class for the name and package. Uses no caching."
+  (interactive (list (read-string "Class name: " (thing-at-point 'symbol))
+                     (read-string "Package name: " (thing-at-point 'symbol))))
+  (save-excursion
+    (let ((full-name (or (car (s-match ".*\\\..*" class-name))
+                         (concat package "." class-name))))
+      (when (java-imports-import-exists-p full-name)
+        (user-error "Import already exists"))
+
+      ;; Goto the start of the imports block
+      (java-imports-go-to-imports-start)
+
+      ;; Search for a proper insertion place within the block of imports
+      (funcall java-imports-find-block-function full-name class-name package)
+
+      ;; The insertion itself. Note that the only thing left to do here is to
+      ;; insert the import.
+      (insert "import " (concat package "." class-name) ";")
+      full-name)))
+
+;;;###autoload
 (defun java-imports-add-import (class-name)
   "Import the Java class for the symbol at point. Uses the symbol
 at the point for the class name.
@@ -178,20 +201,8 @@ already-existing class name."
            (add-to-cache? (or current-prefix-arg
                               (eq nil cached-package)))
            (package (java-imports-read-package class-name cached-package))
-           (full-name (or (car (s-match ".*\\\..*" class-name))
-                          (concat package "." class-name))))
-      (when (java-imports-import-exists-p full-name)
-        (user-error "Import already exists"))
-
-      ;; Goto the start of the imports block
-      (java-imports-go-to-imports-start)
-
-      ;; Search for a proper insertion place within the block of imports
-      (funcall java-imports-find-block-function full-name class-name package)
-
-      ;; The insertion itself. Note that the only thing left to do here is to
-      ;; insert the import.
-      (insert "import " full-name ";")
+           (full-name (java-imports-add-import-with-package
+                       class-name package)))
 
       ;; Optionally save the buffer and cache the full package name
       (when java-imports-save-buffer-after-import-added
