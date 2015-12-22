@@ -193,7 +193,7 @@ already-existing class name."
   (interactive (list (read-string "Class name: " (thing-at-point 'symbol))))
   (save-excursion
     (let* ((key (intern class-name))
-           (cache (pcache-repository 'java-imports))
+           (cache (pcache-repository "java-imports"))
            ;; Check if we have seen this class's package before
            (cached-package (and java-imports-use-cache
                                 (pcache-get cache key)))
