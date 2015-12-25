@@ -38,6 +38,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'thingatpt)
 (require 'subr-x)
 (require 's)
@@ -106,12 +107,15 @@ start (if there are none)."
           (t (goto-char (point-min))
              (open-line 1)))))
 
+(defun java-imports-get-import (line)
+  "Return the fully-qualified package for the given import line."
+  (when line
+    (cadr (s-match "import \\\(.*\\\);"
+                   (string-trim line)))))
+
 (defun java-imports-import-for-line ()
   "Returns the fully-qualified class name for the import line."
-  (let ((tap (thing-at-point 'line)))
-    (when tap
-      (cadr (s-match "import \\\(.*\\\);"
-                     (string-trim tap))))))
+  (java-imports-get-import (thing-at-point 'line)))
 
 (defun java-imports-import-exists-p (full-name)
   "Checks if the import already exists"
@@ -158,6 +162,16 @@ known classes"
         (read-string prompt nil nil default-package))))
 
 ;;;###autoload
+(defun java-imports-list-imports ()
+  "Return a list of all fully-qualified packages in the current
+Java-mode buffer"
+  (interactive)
+  (cl-mapcar
+   #'java-imports-get-import
+   (cl-remove-if-not (lambda (str) (s-matches? "import[ \t]+.+[ \t]*;" str))
+                     (s-lines (buffer-string)))))
+
+;;;###autoload
 (defun java-imports-add-import-with-package (class-name package)
   "Add an import for the class for the name and package. Uses no caching."
   (interactive (list (read-string "Class name: " (thing-at-point 'symbol))
@@ -166,7 +180,7 @@ known classes"
     (let ((full-name (or (car (s-match ".*\\\..*" class-name))
                          (concat package "." class-name))))
       (when (java-imports-import-exists-p full-name)
-        (user-error "Import already exists"))
+        (user-error "Import for '%s' already exists" full-name))
 
       ;; Goto the start of the imports block
       (java-imports-go-to-imports-start)
@@ -182,7 +196,8 @@ known classes"
 ;;;###autoload
 (defun java-imports-add-import (class-name)
   "Import the Java class for the symbol at point. Uses the symbol
-at the point for the class name.
+at the point for the class name, ask for a confirmation of the
+class name before adding it.
 
 Checks the import cache to see if a package entry exists for the
 given class. If found, adds an import statement for the class. If
@@ -213,6 +228,17 @@ already-existing class name."
         (pcache-put cache key package)
         (pcache-save cache))
       full-name)))
+
+;;;###autoload
+(defun java-imports-add-import-dwim ()
+  "Add an import statement for the class at point. If no class is
+found, prompt for the class name. If the class's package already
+exists in the cache, add it and return, otherwise prompt for the
+package and cache it for future statements."
+  (interactive)
+  (let ((class (or (thing-at-point 'symbol)
+                   (read-string "Class name: "))))
+    (java-imports-add-import class)))
 
 (provide 'java-imports)
 

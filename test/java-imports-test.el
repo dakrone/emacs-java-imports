@@ -14,7 +14,7 @@
     (should (equal (java-imports-import-for-line)
                    "java.util.List")))
   (with-temp-buffer
-    (insert "		  import org.writequit.Thingy;  ")
+    (insert "     import org.writequit.Thingy;  ")
     (should (equal (java-imports-import-for-line)
                    "org.writequit.Thingy"))))
 
@@ -91,6 +91,21 @@
        "package mypackage;\n\n"
        "import java.util.ArrayList;\n"
        "import java.util.List;\n\n\n")))))
+
+(ert-deftest t-list-imports ()
+  (with-temp-buffer
+    (insert "package mypackage;\n")
+    (insert "\n")
+    (insert "import org.Thing;\n")
+    (insert "\n")
+    (insert "import java.util.List;\n")
+    (insert "import java.util.ArrayList;\n")
+    (insert "\n")
+    (insert "public class Foo {}")
+    (should
+     (equal
+      (java-imports-list-imports)
+      '("org.Thing" "java.util.List" "java.util.ArrayList")))))
 
 ;; End:
 ;;; java-imports-test.el ends here

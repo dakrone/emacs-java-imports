@@ -15,7 +15,9 @@
 [[https://travis-ci.org/dakrone/emacs-java-imports][file:https://travis-ci.org/dakrone/emacs-java-imports.svg]]
 [[http://melpa.org/#/java-imports][file:http://melpa.org/packages/java-imports-badge.svg]]
 
-I needed a way to import java classes easily in Emacs.
+I needed a way to import java classes easily in Emacs. I also didn't want a
+package that was tied to a particular tool like maven or gradle (especially a
+potentially long startup time tool).
 
 This adds the =import-java-class= function, which will prompt for the class at
 point, then the package, then add the required import statement for the class
@@ -48,11 +50,27 @@ repository, and =M-x package-install RET java-imports RET= to install
 (require 'java-imports)
 
 ;; whatever you want to bind it to
-(define-key java-mode-map (kbd "M-I") 'java-imports-add-import)
+(define-key java-mode-map (kbd "M-I") 'java-imports-add-import-dwim)
 
 ;; See customization below
 (setq java-imports-find-block-function 'java-imports-find-place-sorted-block)
 #+END_SRC
+
+** Functions
+
+Functions you may want to bind to a key in Java-mode:
+
+| Function                       | Use                                                    |
+|--------------------------------+--------------------------------------------------------|
+| =java-imports-add-import-dwim= | Add import for the symbol at point (or ask if none)    |
+| =java-imports-add-import=      | Add import for symbol at point, confirming class first |
+
+Other useful functions for writing your own tools:
+
+| Function                               |
+|----------------------------------------|
+| =java-imports-add-import-with-package= |
+| =java-imports-list-imports=            |
 
 ** Customization
 
@@ -118,5 +136,6 @@ class Foo {
 - [X] Avoid importing packages that already have import statements
 - [ ] Handle =*= imports
 - [ ] Inner classes?
+- [ ] Scan java files for classes and add to the cache
 - [X] Add tests
 - [X] Hook up to travis-ci
