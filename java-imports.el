@@ -64,6 +64,12 @@
   :group 'java-imports
   :type 'function)
 
+(defcustom java-imports-cache-name "java-imports"
+  "Name of the cache to be used for the ClassName to Package
+  mapping cache."
+  :group 'java-imports
+  :type 'string)
+
 (defcustom java-imports-default-packages
   '(("List" . "java.util")
     ("Collection" . "java.util")
@@ -77,7 +83,8 @@
     ("ArrayDeque" . "java.util")
     ("PriorityQueue" . "java.util")
     ("HashMap" . "java.util")
-    ("TreeMap" . "java.util"))
+    ("TreeMap" . "java.util")
+    ("Iterator" . "java.util"))
   "An alist mapping class names to probable packages of the
 classes."
   :group 'java-imports
@@ -112,6 +119,13 @@ start (if there are none)."
   (when line
     (cadr (s-match "import \\\(.*\\\);"
                    (string-trim line)))))
+
+(defun java-imports-get-package-and-class (import)
+  "Explode the import and return (pkg . class) for the given import.
+
+Example 'java.util.Map' returns '(\"java.util\" \"Map\")."
+  (when import
+    (cl-subseq (s-match "\\\(.*\\\)\\\.\\\([A-Z].+\\\);?" import) 1)))
 
 (defun java-imports-import-for-line ()
   "Returns the fully-qualified class name for the import line."
@@ -162,6 +176,24 @@ known classes"
         (read-string prompt nil nil default-package))))
 
 ;;;###autoload
+(defun java-imports-scan-file ()
+  "Scans a java-mode buffer, adding any import class -> package
+mappings to the import cache. If called with a prefix arguments
+overwrites any existing cache entries for the file."
+  (interactive)
+  (when (eq 'java-mode major-mode)
+    (let* ((cache (pcache-repository java-imports-cache-name)))
+      (dolist (import (java-imports-list-imports))
+        (let* ((pkg-class-list (java-imports-get-package-and-class import))
+               (pkg (car pkg-class-list))
+               (class (intern (cadr pkg-class-list)))
+               (exists-p (pcache-get cache class)))
+          (when (or current-prefix-arg (not exists-p))
+            (message "Adding %s -> %s to the java imports cache" class pkg)
+            (pcache-put cache class pkg))))
+      (pcache-save cache))))
+
+;;;###autoload
 (defun java-imports-list-imports ()
   "Return a list of all fully-qualified packages in the current
 Java-mode buffer"
@@ -208,7 +240,7 @@ already-existing class name."
   (interactive (list (read-string "Class name: " (thing-at-point 'symbol))))
   (save-excursion
     (let* ((key (intern class-name))
-           (cache (pcache-repository "java-imports"))
+           (cache (pcache-repository java-imports-cache-name))
            ;; Check if we have seen this class's package before
            (cached-package (and java-imports-use-cache
                                 (pcache-get cache key)))
@@ -223,7 +255,7 @@ already-existing class name."
       (when java-imports-save-buffer-after-import-added
         (save-buffer))
       (when add-to-cache?
-        (message "Adding '%s' -> '%s' to java imports cache"
+        (message "Adding %s -> %s to java imports cache"
                  class-name package)
         (pcache-put cache key package)
         (pcache-save cache))

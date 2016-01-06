@@ -107,5 +107,13 @@
       (java-imports-list-imports)
       '("org.Thing" "java.util.List" "java.util.ArrayList")))))
 
+(ert-deftest t-pkg-and-class-from-import ()
+  (should
+   (equal (java-imports-get-package-and-class "java.util.Map")
+          '("java.util" "Map")))
+  (should
+   (equal (java-imports-get-package-and-class "org.foo.bar.baz.ThingOne")
+          '("org.foo.bar.baz" "ThingOne"))))
+
 ;; End:
 ;;; java-imports-test.el ends here

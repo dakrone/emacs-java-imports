@@ -52,8 +52,15 @@ repository, and =M-x package-install RET java-imports RET= to install
 ;; whatever you want to bind it to
 (define-key java-mode-map (kbd "M-I") 'java-imports-add-import-dwim)
 
-;; See customization below
+;; See customization below for where to put java imports
 (setq java-imports-find-block-function 'java-imports-find-place-sorted-block)
+#+END_SRC
+
+I also recommend having java-imports automatically add any seen imports to the
+import cache by adding:
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'java-mode-hook 'java-imports-scan-file)
 #+END_SRC
 
 ** Functions
@@ -64,6 +71,7 @@ Functions you may want to bind to a key in Java-mode:
 |--------------------------------+--------------------------------------------------------|
 | =java-imports-add-import-dwim= | Add import for the symbol at point (or ask if none)    |
 | =java-imports-add-import=      | Add import for symbol at point, confirming class first |
+| =java-imports-scan-file=       | Scan imports in the file, adding them to the cache     |
 
 Other useful functions for writing your own tools:
 
@@ -131,11 +139,18 @@ class Foo {
 }
 #+END_SRC
 
+*** Cache name
+
+By default java-imports will use "=java-imports=" as the name of the cache of
+class->package names, however, if you want to have separate caches per project,
+you can customize =java-imports-cache-name= to have a separate String name
+(perhaps in a =.dir-locals.el= for per-project imports).
+
 * Things to do:
 
 - [X] Avoid importing packages that already have import statements
 - [ ] Handle =*= imports
 - [ ] Inner classes?
-- [ ] Scan java files for classes and add to the cache
+- [X] Scan java files for classes and add to the cache
 - [X] Add tests
 - [X] Hook up to travis-ci
