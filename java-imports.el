@@ -184,13 +184,14 @@ overwrites any existing cache entries for the file."
   (when (eq 'java-mode major-mode)
     (let* ((cache (pcache-repository java-imports-cache-name)))
       (dolist (import (java-imports-list-imports))
-        (let* ((pkg-class-list (java-imports-get-package-and-class import))
-               (pkg (car pkg-class-list))
-               (class (intern (cadr pkg-class-list)))
-               (exists-p (pcache-get cache class)))
-          (when (or current-prefix-arg (not exists-p))
-            (message "Adding %s -> %s to the java imports cache" class pkg)
-            (pcache-put cache class pkg))))
+        (let ((pkg-class-list (java-imports-get-package-and-class import)))
+          (when pkg-class-list
+            (let* ((pkg (car pkg-class-list))
+                   (class (intern (cadr pkg-class-list)))
+                   (exists-p (pcache-get cache class)))
+              (when (or current-prefix-arg (not exists-p))
+                (message "Adding %s -> %s to the java imports cache" class pkg)
+                (pcache-put cache class pkg))))))
       (pcache-save cache))))
 
 ;;;###autoload
