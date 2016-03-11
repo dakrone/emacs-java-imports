@@ -210,7 +210,8 @@ Java-mode buffer"
   (interactive (list (read-string "Class name: " (thing-at-point 'symbol))
                      (read-string "Package name: " (thing-at-point 'symbol))))
   (save-excursion
-    (let ((full-name (or (car (s-match ".*\\\..*" class-name))
+    (let ((class-name (s-chop-prefix "@" class-name))
+          (full-name (or (car (s-match ".*\\\..*" class-name))
                          (concat package "." class-name))))
       (when (java-imports-import-exists-p full-name)
         (user-error "Import for '%s' already exists" full-name))
@@ -240,7 +241,8 @@ If called with a prefix argument, overwrites the package for an
 already-existing class name."
   (interactive (list (read-string "Class name: " (thing-at-point 'symbol))))
   (save-excursion
-    (let* ((key (intern class-name))
+    (let* ((class-name (s-chop-prefix "@" class-name))
+           (key (intern class-name))
            (cache (pcache-repository java-imports-cache-name))
            ;; Check if we have seen this class's package before
            (cached-package (and java-imports-use-cache
@@ -271,7 +273,7 @@ package and cache it for future statements."
   (interactive)
   (let ((class (or (thing-at-point 'symbol)
                    (read-string "Class name: "))))
-    (java-imports-add-import class)))
+    (java-imports-add-import (s-chop-prefix "@" class))))
 
 (provide 'java-imports)
 

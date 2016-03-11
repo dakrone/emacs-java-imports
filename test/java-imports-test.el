@@ -78,6 +78,19 @@
        "import java.util.List;\n"
        "import java.util.ArrayList;\n\n\n"))))
 
+  ;; Test for annotation importing
+  (with-temp-buffer
+    (insert "package mypackage;\n\n")
+    (insert "import java.util.List;\n\n\n")
+    (java-imports-add-import-with-package "@MyAnnotation" "org.foo")
+    (should
+     (equal
+      (buffer-string)
+      (concat
+       "package mypackage;\n\n"
+       "import java.util.List;\n"
+       "import org.foo.MyAnnotation;\n\n\n"))))
+
   (with-temp-buffer
     (setq-local java-imports-find-block-function
                 #'java-imports-find-place-sorted-block)

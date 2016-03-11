@@ -149,6 +149,7 @@ you can customize =java-imports-cache-name= to have a separate String name
 * Things to do:
 
 - [X] Avoid importing packages that already have import statements
+- [X] Handle annotations correctly
 - [ ] Handle =*= imports
 - [ ] Inner classes?
 - [X] Scan java files for classes and add to the cache
