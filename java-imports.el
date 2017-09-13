@@ -283,9 +283,9 @@ if a class is found in multiple packages, any such package may be registered
 for that class in the cache.
 This is currently a synchronous and potentially slow operation, but
 hopefully faster than adding imports manually or using eclipse"
-  (labels ((shell-command-to-lines
-	    (cmd)
-	    (split-string (shell-command-to-string cmd) "\n" t)))
+  (cl-labels ((shell-command-to-lines
+	       (cmd)
+	       (split-string (shell-command-to-string cmd) "\n" t)))
     (let* ((local-repo (or local-repo (expand-file-name
 				       "~/.m2/repository/")))
 	   (jars (shell-command-to-lines
