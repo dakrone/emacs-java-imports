@@ -284,24 +284,24 @@ for that class in the cache.
 This is currently a synchronous and potentially slow operation, but
 hopefully faster than adding imports manually or using eclipse"
   (cl-labels ((shell-command-to-lines
-	       (cmd)
-	       (s-split "\n" (shell-command-to-string cmd) t)))
+               (cmd)
+               (s-split "\n" (shell-command-to-string cmd) t)))
     (let* ((local-repo (or local-repo (expand-file-name
-				       "~/.m2/repository/")))
-	   (jars (shell-command-to-lines
-		  (format "find '%s' -name '*.jar'"
-			  local-repo)))
-	   (cache (pcache-repository java-imports-cache-name)))
+                                       "~/.m2/repository/")))
+           (jars (shell-command-to-lines
+                  (format "find '%s' -name '*.jar'"
+                          local-repo)))
+           (cache (pcache-repository java-imports-cache-name)))
       (dolist (jar jars)
-	(dolist (line (shell-command-to-lines (concat "jar -tf " jar)))
-	  (when (string-match "\\(.*\\)/\\(.*\\)[.]class" line)
-	    (let ((class (intern (match-string 2 line)))
-		  (package-name
-		   (replace-regexp-in-string "/" "." (match-string 1 line))))
-	      (if (pcache-get cache class)
-		  (message "skipping %s -> %s" class package-name)
-		(progn (message "adding %s -> %s..." class package-name)
-		       (pcache-put cache class package-name))))))))))
+        (dolist (line (shell-command-to-lines (concat "jar -tf " jar)))
+          (when (string-match "\\(.*\\)/\\(.*\\)[.]class" line)
+            (let ((class (intern (match-string 2 line)))
+                  (package-name
+                   (replace-regexp-in-string "/" "." (match-string 1 line))))
+              (if (pcache-get cache class)
+                  (message "skipping %s -> %s" class package-name)
+                (progn (message "adding %s -> %s..." class package-name)
+                       (pcache-put cache class package-name))))))))))
 
 (provide 'java-imports)
 
