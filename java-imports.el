@@ -298,9 +298,7 @@ hopefully faster than adding imports manually or using eclipse"
 	  (when (string-match "\\(.*\\)/\\(.*\\)[.]class" line)
 	    (let ((class (intern (match-string 2 line)))
 		  (package-name
-		   (->>
-		    (match-string 1 line)
-		    (replace-regexp-in-string "/" "."))))
+		   (replace-regexp-in-string "/" "." (match-string 1 line))))
 	      (message "%s -> %s" class package-name)
 	      (pcache-put cache class package-name))))))))
 
