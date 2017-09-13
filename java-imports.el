@@ -298,8 +298,10 @@ hopefully faster than adding imports manually or using eclipse"
 	    (let ((class (intern (match-string 2 line)))
 		  (package-name
 		   (replace-regexp-in-string "/" "." (match-string 1 line))))
-	      (message "%s -> %s" class package-name)
-	      (pcache-put cache class package-name))))))))
+	      (if (pcache-get cache class)
+		  (message "skipping %s -> %s" class package-name)
+		(progn (message "adding %s -> %s..." class package-name)
+		       (pcache-put cache class package-name))))))))))
 
 (provide 'java-imports)
 
