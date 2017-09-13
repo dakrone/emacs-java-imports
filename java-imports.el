@@ -285,7 +285,7 @@ This is currently a synchronous and potentially slow operation, but
 hopefully faster than adding imports manually or using eclipse"
   (cl-labels ((shell-command-to-lines
 	       (cmd)
-	       (split-string (shell-command-to-string cmd) "\n" t)))
+	       (s-split "\n" (shell-command-to-string cmd) t)))
     (let* ((local-repo (or local-repo (expand-file-name
 				       "~/.m2/repository/")))
 	   (jars (shell-command-to-lines
