@@ -5,7 +5,7 @@
 ;; Author: Lee Hinman <lee@writequit.org>
 ;; URL: http://www.github.com/dakrone/emacs-java-imports
 ;; Version: 0.1.1
-;; Keywords: java
+;; Keywords: java kotlin
 ;; Package-Requires: ((emacs "24.4") (s "1.10.0") (pcache "0.3.2"))
 
 ;; This file is not part of GNU Emacs.
@@ -117,7 +117,7 @@ start (if there are none)."
 (defun java-imports-get-import (line)
   "Return the fully-qualified package for the given import line."
   (when line
-    (cadr (s-match "import \\\(.*\\\);"
+    (cadr (s-match "import \\\(.*?\\\);?"
                    (string-trim line)))))
 
 (defun java-imports-get-package-and-class (import)
@@ -125,7 +125,7 @@ start (if there are none)."
 
 Example 'java.util.Map' returns '(\"java.util\" \"Map\")."
   (when import
-    (cl-subseq (s-match "\\\(.*\\\)\\\.\\\([A-Z].+\\\);?" import) 1)))
+    (cl-subseq (s-match "\\\(.*\\\)\\\.\\\([A-Z].+?\\\)\\\(;\\\|$\\\)" import) 1)))
 
 (defun java-imports-import-for-line ()
   "Returns the fully-qualified class name for the import line."
@@ -177,11 +177,11 @@ known classes"
 
 ;;;###autoload
 (defun java-imports-scan-file ()
-  "Scans a java-mode buffer, adding any import class -> package
+  "Scans a java-mode or kotlin-mode buffer, adding any import class -> package
 mappings to the import cache. If called with a prefix arguments
 overwrites any existing cache entries for the file."
   (interactive)
-  (when (eq 'java-mode major-mode)
+  (when (member major-mode '(java-mode kotlin-mode))
     (let* ((cache (pcache-repository java-imports-cache-name)))
       (dolist (import (java-imports-list-imports))
         (let ((pkg-class-list (java-imports-get-package-and-class import)))
@@ -197,11 +197,11 @@ overwrites any existing cache entries for the file."
 ;;;###autoload
 (defun java-imports-list-imports ()
   "Return a list of all fully-qualified packages in the current
-Java-mode buffer"
+Java-mode or Kotlin-mode buffer"
   (interactive)
   (cl-mapcar
    #'java-imports-get-import
-   (cl-remove-if-not (lambda (str) (s-matches? "import[ \t]+.+[ \t]*;" str))
+   (cl-remove-if-not (lambda (str) (s-matches? "import[ \t]+.+?[ \t]*;?" str))
                      (s-lines (buffer-string)))))
 
 ;;;###autoload
