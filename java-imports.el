@@ -117,7 +117,7 @@ start (if there are none)."
 (defun java-imports-get-import (line)
   "Return the fully-qualified package for the given import line."
   (when line
-    (cadr (s-match "import \\\(.*?\\\);?"
+    (cadr (s-match "import \\\(.*?\\\);?$"
                    (string-trim line)))))
 
 (defun java-imports-get-package-and-class (import)
