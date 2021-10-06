@@ -125,7 +125,7 @@ start (if there are none)."
 
 Example 'java.util.Map' returns '(\"java.util\" \"Map\")."
   (when import
-    (cl-subseq (s-match "\\\(.*\\\)\\\.\\\([A-Z].+?\\\)\\\(;\\\|$\\\)" import) 1)))
+    (cl-subseq (s-match "\\\(.*\\\)\\\.\\\([A-Z].+?\\\)\\\(?:;\\\|$\\\)" import) 1)))
 
 (defun java-imports-import-for-line ()
   "Returns the fully-qualified class name for the import line."
