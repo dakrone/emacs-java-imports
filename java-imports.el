@@ -117,7 +117,7 @@ start (if there are none)."
 (defun java-imports-get-import (line)
   "Return the fully-qualified package for the given import line."
   (when line
-    (cadr (s-match "import \\\(.*?\\\);?"
+    (cadr (s-match "import \\\(.*?\\\);?$"
                    (string-trim line)))))
 
 (defun java-imports-get-package-and-class (import)
@@ -125,7 +125,7 @@ start (if there are none)."
 
 Example 'java.util.Map' returns '(\"java.util\" \"Map\")."
   (when import
-    (cl-subseq (s-match "\\\(.*\\\)\\\.\\\([A-Z].+?\\\)\\\(;\\\|$\\\)" import) 1)))
+    (cl-subseq (s-match "\\\(.*\\\)\\\.\\\([A-Z].+?\\\)\\\(?:;\\\|$\\\)" import) 1)))
 
 (defun java-imports-import-for-line ()
   "Returns the fully-qualified class name for the import line."
