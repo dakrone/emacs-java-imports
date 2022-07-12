@@ -277,12 +277,12 @@ package and cache it for future statements."
 
 ;;;###autoload
 (defun java-imports-scan-local-jars (&optional local-repo)
-  (interactive)
   "scan the local repository, find local jars and add them to the cache.
 if a class is found in multiple packages, any such package may be registered
 for that class in the cache.
 This is currently a synchronous and potentially slow operation, but
 hopefully faster than adding imports manually or using eclipse"
+  (interactive)
   (cl-labels ((shell-command-to-lines
                (cmd)
                (s-split "\n" (shell-command-to-string cmd) t)))
