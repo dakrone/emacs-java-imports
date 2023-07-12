@@ -6,7 +6,7 @@
 ;; URL: http://www.github.com/dakrone/emacs-java-imports
 ;; Version: 0.1.1
 ;; Keywords: java kotlin
-;; Package-Requires: ((emacs "24.4") (s "1.10.0") (pcache "0.3.2"))
+;; Package-Requires: ((emacs "24.4") (s "1.10.0") (pcache "0.5.1"))
 
 ;; This file is not part of GNU Emacs.
 
