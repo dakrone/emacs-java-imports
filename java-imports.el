@@ -183,7 +183,8 @@ overwrites any existing cache entries for the file."
   (interactive)
   (when (member major-mode '(java-mode kotlin-mode))
     (let* ((cache (pcache-repository java-imports-cache-name)))
-      (dolist (import (java-imports-list-imports))
+      (dolist (import (append (java-imports-list-imports)
+                              (java-imports-list-top-levels)))
         (let ((pkg-class-list (java-imports-get-package-and-class import)))
           (when pkg-class-list
             (let* ((pkg (car pkg-class-list))
@@ -203,6 +204,25 @@ Java-mode or Kotlin-mode buffer"
    #'java-imports-get-import
    (cl-remove-if-not (lambda (str) (s-matches? "import[ \t]+.+?[ \t]*;?" str))
                      (s-lines (buffer-string)))))
+
+;;;###autoload
+(defun java-imports-list-top-levels ()
+  "Return a list of all public top-level type declarations in
+the current Java-mode buffer"
+  (interactive)
+  (let* ((package-match
+          (s-match "^package[ \t]+\\\(.+?\\\);?$" (buffer-string)))
+         ;; public is optional to always match the top-level entry and
+         ;; not the first public one (which might be a inner entry).
+         (identifier-match
+          (s-match "\\\(\\\<public[ \t\n]+\\\)?.*?\\\<\\\(?:class\\\|enum\\\|@?interface\\\)[ \t\n]+\\\([^. \t\n<]+\\\).*?[ \t\n]+{" (buffer-string))))
+    (when (and identifier-match
+             (cl-second identifier-match))
+        (let ((identifier (cl-third identifier-match)))
+          (cons (if package-match
+                    (concat (cl-second package-match) "." identifier)
+                  identifier)
+                nil)))))
 
 ;;;###autoload
 (defun java-imports-add-import-with-package (class-name package)

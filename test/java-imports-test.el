@@ -120,6 +120,100 @@
       (java-imports-list-imports)
       '("org.Thing" "java.util.List" "java.util.ArrayList")))))
 
+(ert-deftest t-list-top-levels ()
+  (with-temp-buffer
+    (insert "package mypackage;\n")
+    (insert "\n")
+    (insert "import org.Thing;\n")
+    (insert "\n")
+    (insert "import java.util.List;\n")
+    (insert "import java.util.ArrayList;\n")
+    (insert "\n")
+    (insert "public class Foo {}")
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '("mypackage.Foo"))))
+
+  (with-temp-buffer
+    (insert "public class Foo {}")
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '("Foo"))))
+
+  (with-temp-buffer
+    (insert "public abstract class Foo {}")
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '("Foo"))))
+
+  (with-temp-buffer
+    (insert "public class Foo extends Bar {}")
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '("Foo"))))
+
+  (with-temp-buffer
+    (insert "public class Foo implements Bar {}")
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '("Foo"))))
+
+  (with-temp-buffer
+    (insert "public class Foo<T> {}")
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '("Foo"))))
+
+  (with-temp-buffer
+    (insert "package mypackage;\n")
+    (insert "\n")
+    (insert "class Foo {\n")
+    (insert "public static class Bar {}\n")
+    (insert "}\n")
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '())))
+
+  (with-temp-buffer
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '())))
+
+  (with-temp-buffer
+    (insert "package mypackage;\n")
+    (insert "\n")
+    (insert "public\nenum\nFoo\n{}")
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '("mypackage.Foo"))))
+
+  (with-temp-buffer
+    (insert "package mypackage;\n")
+    (insert "\n")
+    (insert "public @interface Annotation {}")
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '("mypackage.Annotation"))))
+
+  (with-temp-buffer
+    (insert "package mypackage;\n")
+    (insert "\n")
+    (insert "public interface Foo {}")
+    (should
+     (equal
+      (java-imports-list-top-levels)
+      '("mypackage.Foo")))))
+
 (ert-deftest t-pkg-and-class-from-import ()
   (should
    (equal (java-imports-get-package-and-class "java.util.Map")
@@ -127,6 +221,43 @@
   (should
    (equal (java-imports-get-package-and-class "org.foo.bar.baz.ThingOne")
           '("org.foo.bar.baz" "ThingOne"))))
+
+(ert-deftest t-scan-file ()
+  (let ((java-imports-cache-name "java-imports-test/tmp")
+        (inhibit-message t)
+        (c-initialization-hook nil)
+        (c-mode-common-hook nil)
+        (java-mode-hook nil))
+    (unwind-protect
+        (with-temp-buffer
+          (insert "package mypackage;\n")
+          (insert "\n")
+          (insert "import org.Thing;\n")
+          (insert "\n")
+          (insert "import java.util.List;\n")
+          (insert "import java.util.ArrayList;\n")
+          (insert "\n")
+          (insert "public class Foo {}")
+          (java-mode)
+          (java-imports-scan-file)
+          (let ((cache (pcache-repository java-imports-cache-name)))
+            (should
+             (equal
+              (pcache-get cache 'Thing)
+              "org"))
+            (should
+             (equal
+              (pcache-get cache 'List)
+              "java.util"))
+            (should
+             (equal
+              (pcache-get cache 'ArrayList)
+              "java.util"))
+            (should
+             (equal
+              (pcache-get cache 'Foo)
+              "mypackage"))))
+      (pcache-destroy-repository java-imports-cache-name))))
 
 ;; End:
 ;;; java-imports-test.el ends here
